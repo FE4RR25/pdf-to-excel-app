@@ -4,7 +4,7 @@ import pandas as pd
 import re
 import io
 
-st.title("📄 PDF zu Excel - Dokumentenanalyse")
+st.title("PDF zu Excel - Dokumentenscan")
 
 uploaded_files = st.file_uploader("Lade eine oder mehrere PDF-Dateien hoch", accept_multiple_files=True)
 
