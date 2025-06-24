@@ -8,18 +8,9 @@ st.set_page_config(page_title="PDF zu Excel", page_icon="📄")
 
 st.title("PDF zu Excel - Dokumentenscan")
 
-# Optionen in der Seitenleiste
-st.sidebar.header("Anzeigeoptionen")
-show_datum = st.sidebar.checkbox("Rechnungsdatum anzeigen", value=True)
-show_betrag = st.sidebar.checkbox("Rechnungsbetrag anzeigen")
 # Upload-Bereich und Anzeigeoptionen nebeneinander darstellen
 col_upload, col_options = st.columns([2, 1])
 
-uploaded_files = st.file_uploader(
-    "Lade eine oder mehrere PDF-Dateien hoch",
-    type=["pdf"],
-    accept_multiple_files=True,
-)
 with col_upload:
     uploaded_files = st.file_uploader(
         "Lade eine oder mehrere PDF-Dateien hoch",
@@ -33,54 +24,40 @@ with col_options:
     show_name = st.checkbox("Name", value=True)
     show_rechnungsnummer = st.checkbox("Rechnungsnummer", value=True)
     show_datum = st.checkbox("Rechnungsdatum", value=True)
+    show_betrag = st.checkbox("Rechnungsbetrag")
 
 if uploaded_files:
     extracted_data = []
 
     for uploaded_file in uploaded_files:
-        with pdfplumber.open(uploaded_file) as pdf:
-            for page in pdf.pages:
-                text = page.extract_text()
-                if text:
-                    name_match = re.search(r'Name:\s*(.*)', text)
-                    rechnung_match = re.search(r'Rechnungsnummer:\s*(\d+)', text)
-                    datum_match = re.search(r'Datum:\s*(\d{2}\.\d{2}\.\d{4})', text)
-
-                    if name_match and rechnung_match and datum_match:
-                        extracted_data.append({
-                            'Dateiname': uploaded_file.name,
-                            'Name': name_match.group(1).strip(),
-                            'Rechnungsnummer': rechnung_match.group(1).strip(),
-                            'Datum': datum_match.group(1).strip()
-                        })
         try:
             with pdfplumber.open(uploaded_file) as pdf:
                 for page in pdf.pages:
                     text = page.extract_text()
-                    if text:
-                        name_match = re.search(r'Name:\s*(.*)', text)
-                        rechnung_match = re.search(r'Rechnungsnummer:\s*(\d+)', text)
-                        datum_match = re.search(r'Datum:\s*(\d{2}\.\d{2}\.\d{4})', text)
-                        betrag_match = re.search(r'Rechnungsbetrag:\s*([\d,.]+)', text)
+                    if not text:
+                        continue
 
-                        if name_match and rechnung_match:
-                            entry = {
-                                'Dateiname': uploaded_file.name,
-                                'Name': name_match.group(1).strip(),
-                                'Rechnungsnummer': rechnung_match.group(1).strip(),
-                            }
-                            if datum_match:
-                                entry['Rechnungsdatum'] = datum_match.group(1).strip()
-                            if betrag_match:
-                                entry['Rechnungsbetrag'] = betrag_match.group(1).strip()
-                            extracted_data.append(entry)
+                    name_match = re.search(r'Name:\s*(.*)', text)
+                    rechnung_match = re.search(r'Rechnungsnummer:\s*(\d+)', text)
+                    datum_match = re.search(r'Datum:\s*(\d{2}\.\d{2}\.\d{4})', text)
+                    betrag_match = re.search(r'Rechnungsbetrag:\s*([\d,.]+)', text)
+
+                    if name_match and rechnung_match:
+                        entry = {
+                            'Dateiname': uploaded_file.name,
+                            'Name': name_match.group(1).strip(),
+                            'Rechnungsnummer': rechnung_match.group(1).strip(),
+                        }
+                        if datum_match:
+                            entry['Rechnungsdatum'] = datum_match.group(1).strip()
+                        if betrag_match:
+                            entry['Rechnungsbetrag'] = betrag_match.group(1).strip()
+                        extracted_data.append(entry)
         except Exception as e:
             st.error(f"Fehler beim Verarbeiten von {uploaded_file.name}: {e}")
 
     if extracted_data:
         df = pd.DataFrame(extracted_data)
-        st.write("### Extrahierte Daten", df)
-        columns = ['Dateiname', 'Name', 'Rechnungsnummer']
         columns = []
         if show_dateiname:
             columns.append('Dateiname')
@@ -95,11 +72,9 @@ if uploaded_files:
 
         st.write("### Extrahierte Daten", df[columns])
 
-
         # Excel-Datei zum Download erstellen
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False)
             df[columns].to_excel(writer, index=False)
         excel_data = output.getvalue()
 
