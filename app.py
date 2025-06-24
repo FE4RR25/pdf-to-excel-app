@@ -8,7 +8,6 @@ st.set_page_config(page_title="PDF zu Excel", page_icon="📄")
 
 st.title("PDF zu Excel - Dokumentenscan")
 
-uploaded_files = st.file_uploader("Lade eine oder mehrere PDF-Dateien hoch", accept_multiple_files=True)
 # Optionen in der Seitenleiste
 st.sidebar.header("Anzeigeoptionen")
 show_datum = st.sidebar.checkbox("Rechnungsdatum anzeigen", value=True)
