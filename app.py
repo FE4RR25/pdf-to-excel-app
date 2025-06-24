@@ -71,8 +71,6 @@ if uploaded_files:
         if show_betrag and 'Rechnungsbetrag' in df.columns:
             columns.append('Rechnungsbetrag')
 
-        st.write("### Extrahierte Daten")
-        st.dataframe(df[columns])
 
         # Excel-Datei zum Download erstellen
         output = io.BytesIO()
