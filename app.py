@@ -39,7 +39,7 @@ if uploaded_files:
         excel_data = output.getvalue()
 
         st.download_button(
-            label="📥 Excel-Datei herunterladen",
+            label="Excel-Datei herunterladen",
             data=excel_data,
             file_name='extrahierte_daten.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
