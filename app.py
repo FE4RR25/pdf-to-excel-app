@@ -20,11 +20,10 @@ with col_upload:
 
 with col_options:
     st.markdown("### Anzeigeoptionen")
-    show_dateiname = st.checkbox("Dateiname anzeigen", value=True)
-    show_name = st.checkbox("Name anzeigen", value=True)
-    show_rechnungsnummer = st.checkbox("Rechnungsnummer anzeigen", value=True)
-    show_datum = st.checkbox("Rechnungsdatum anzeigen", value=True)
-    show_betrag = st.checkbox("Rechnungsbetrag anzeigen")
+    show_dateiname = st.checkbox("Dateiname", value=True)
+    show_name = st.checkbox("Name", value=True)
+    show_rechnungsnummer = st.checkbox("Rechnungsnummer", value=True)
+    show_datum = st.checkbox("Rechnungsdatum", value=True)
 
 if uploaded_files:
     extracted_data = []
@@ -53,8 +52,6 @@ if uploaded_files:
                         name_match = re.search(r'Name:\s*(.*)', text)
                         rechnung_match = re.search(r'Rechnungsnummer:\s*(\d+)', text)
                         datum_match = re.search(r'Datum:\s*(\d{2}\.\d{2}\.\d{4})', text)
-                        betrag_match = re.search(r'Rechnungsbetrag:\s*([\d,.]+)', text)
-
                         if name_match and rechnung_match:
                             entry = {
                                 'Dateiname': uploaded_file.name,
@@ -63,8 +60,6 @@ if uploaded_files:
                             }
                             if datum_match:
                                 entry['Rechnungsdatum'] = datum_match.group(1).strip()
-                            if betrag_match:
-                                entry['Rechnungsbetrag'] = betrag_match.group(1).strip()
                             extracted_data.append(entry)
         except Exception as e:
             st.error(f"Fehler beim Verarbeiten von {uploaded_file.name}: {e}")
@@ -80,8 +75,6 @@ if uploaded_files:
             columns.append('Rechnungsnummer')
         if show_datum and 'Rechnungsdatum' in df.columns:
             columns.append('Rechnungsdatum')
-        if show_betrag and 'Rechnungsbetrag' in df.columns:
-            columns.append('Rechnungsbetrag')
 
         st.write("### Extrahierte Daten", df[columns])
 
