@@ -8,16 +8,22 @@ st.set_page_config(page_title="PDF zu Excel", page_icon="📄")
 
 st.title("PDF zu Excel - Dokumentenscan")
 
-# Optionen in der Seitenleiste
-st.sidebar.header("Anzeigeoptionen")
-show_datum = st.sidebar.checkbox("Rechnungsdatum anzeigen", value=True)
-show_betrag = st.sidebar.checkbox("Rechnungsbetrag anzeigen")
+# Upload-Bereich und Anzeigeoptionen nebeneinander darstellen
+col_upload, col_options = st.columns([2, 1])
 
-uploaded_files = st.file_uploader(
-    "Lade eine oder mehrere PDF-Dateien hoch",
-    type=["pdf"],
-    accept_multiple_files=True,
-)
+with col_upload:
+    uploaded_files = st.file_uploader(
+        "Lade eine oder mehrere PDF-Dateien hoch",
+        type=["pdf"],
+        accept_multiple_files=True,
+    )
+
+with col_options:
+    st.markdown("### Anzeigeoptionen")
+    show_dateiname = st.checkbox("Dateiname", value=True)
+    show_name = st.checkbox("Name", value=True)
+    show_rechnungsnummer = st.checkbox("Rechnungsnummer", value=True)
+    show_datum = st.checkbox("Rechnungsdatum", value=True)
 
 if uploaded_files:
     extracted_data = []
@@ -46,8 +52,6 @@ if uploaded_files:
                         name_match = re.search(r'Name:\s*(.*)', text)
                         rechnung_match = re.search(r'Rechnungsnummer:\s*(\d+)', text)
                         datum_match = re.search(r'Datum:\s*(\d{2}\.\d{2}\.\d{4})', text)
-                        betrag_match = re.search(r'Rechnungsbetrag:\s*([\d,.]+)', text)
-
                         if name_match and rechnung_match:
                             entry = {
                                 'Dateiname': uploaded_file.name,
@@ -56,26 +60,28 @@ if uploaded_files:
                             }
                             if datum_match:
                                 entry['Rechnungsdatum'] = datum_match.group(1).strip()
-                            if betrag_match:
-                                entry['Rechnungsbetrag'] = betrag_match.group(1).strip()
                             extracted_data.append(entry)
         except Exception as e:
             st.error(f"Fehler beim Verarbeiten von {uploaded_file.name}: {e}")
 
     if extracted_data:
         df = pd.DataFrame(extracted_data)
-        st.write("### Extrahierte Daten", df)
-        columns = ['Dateiname', 'Name', 'Rechnungsnummer']
+        columns = []
+        if show_dateiname:
+            columns.append('Dateiname')
+        if show_name:
+            columns.append('Name')
+        if show_rechnungsnummer:
+            columns.append('Rechnungsnummer')
         if show_datum and 'Rechnungsdatum' in df.columns:
             columns.append('Rechnungsdatum')
-        if show_betrag and 'Rechnungsbetrag' in df.columns:
-            columns.append('Rechnungsbetrag')
+
+        st.write("### Extrahierte Daten", df[columns])
 
 
         # Excel-Datei zum Download erstellen
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False)
             df[columns].to_excel(writer, index=False)
         excel_data = output.getvalue()
 
