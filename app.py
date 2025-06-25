@@ -8,7 +8,7 @@ st.set_page_config(page_title="PDF zu Excel", page_icon="📄")
 
 st.title("PDF zu Excel - Dokumentenscan")
 
-# Upload-Bereich und Anzeigeoptionen nebeneinander darstellen
+
 col_upload, col_options = st.columns([2, 1])
 
 with col_upload:
@@ -39,8 +39,7 @@ if uploaded_files:
                     name_match = re.search(r'Name:\s*(.*)', text)
                     rechnung_match = re.search(r'Rechnungsnummer:\s*(\d+)', text)
                     datum_match = re.search(r'Datum:\s*(\d{2}\.\d{2}\.\d{4})', text)
-                    # Removed extraction of invoice amount (Rechnungsbetrag)
-                    # betrag_match = re.search(r'Rechnungsbetrag:\s*([\d,.]+)', text)
+                  
 
                     if name_match and rechnung_match:
                         entry = {
@@ -50,9 +49,7 @@ if uploaded_files:
                         }
                         if datum_match:
                             entry['Rechnungsdatum'] = datum_match.group(1).strip()
-                        # Invoice amount no longer captured
-                        # if betrag_match:
-                        #     entry['Rechnungsbetrag'] = betrag_match.group(1).strip()
+                       
                         extracted_data.append(entry)
         except Exception as e:
             st.error(f"Fehler beim Verarbeiten von {uploaded_file.name}: {e}")
@@ -68,13 +65,11 @@ if uploaded_files:
             columns.append('Rechnungsnummer')
         if show_datum and 'Rechnungsdatum' in df.columns:
             columns.append('Rechnungsdatum')
-        # Invoice amount column removed
-        # if show_betrag and 'Rechnungsbetrag' in df.columns:
-        #     columns.append('Rechnungsbetrag')
+      
 
         st.write("### Extrahierte Daten", df[columns])
 
-        # Excel-Datei zum Download erstellen
+     
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df[columns].to_excel(writer, index=False)
